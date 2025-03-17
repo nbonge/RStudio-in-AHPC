@@ -1,0 +1,448 @@
+---
+title: "R in AHPC"
+author: "Nicole Bonge and Prof. Jihong Zhang"
+affiliation: "Educational Statistics and Research Methods"
+title-slide-attributes:
+  data-background-image: title-background.png
+  data-background-size: contain
+  data-background-opacity: "0.9"
+format:
+  html:
+    #theme:
+    #  light: flatly
+    #  dark: darkly
+    theme:                  litera    # default, cerulean, cosmo, cyborg, darkly, flatly, journal, litera, lumen, lux, materia, minty, morph, pulse, quartz, sandstone, simplex, sketchy, slate, solar, spacelab, superhero, united, vapor, yeti, zephyr
+    highlight-style:        atom-one  # a11y, arrow, atom-one, ayu, breeze, github, gruvbox; pygments, tango, espresso, zenburn, kate, monochrome, breezedark, haddock; dracula, mokokai, nord, oblivion, printing, radical, solarized, vim-dark
+    page-layout:            full      # article, full   # https://quarto.org/docs/output-formats/page-layout.html
+    toc:                    true
+    toc-depth:              4
+    toc-location:           body      # left, body, right
+    toc-title:              Contents
+    number-sections:        true      # true, false
+    number-depth:           5
+    code-fold:              show      # true (initially hidden), false, show (initially shown)
+    code-tools:                       # menu top-right to show/hide all code
+      toggle:               true
+      caption:              "Code"    # none
+      source:               false
+    code-summary:           "Code"    #, click to show"
+    code-overflow:          scroll    # scroll, wrap
+    code-block-bg:          true
+    code-block-border-left: "#30B0E0"
+    code-copy:              hover     # true, false, hover a copy buttom in top-right of code block
+    df-print:               paged     # default, kable, tibble, paged   # https://quarto.org/docs/computations/r.html
+    self-contained:         false     # !!! this can cause a render error: "ERROR: The process cannot access the file because it is being used by another process. (os error 32)"
+    self-contained-math:    true
+    link-external-icon:       false   # true, false an icon after the link to indicate external
+    link-external-newwindow:  false   # true, false
+    link-external-filter:     ^(?:http:|https:)\/\/statacumen\.com
+    #html-math-method: katex    # https://quarto.org/docs/output-formats/html-basics.html
+  pdf:                                # Quarto uses KOMA Script document classes by default  https://ctan.org/pkg/koma-script
+    latex-auto-mk: true               # true, false  # run the pdf-engine more than once to generate your PDF
+    #pdf-engine: lualatex
+    #pdf-engine-opt: -outdir=out
+    #include-in-header:
+    #  - text: |
+    #      \usepackage{eplain}
+    #      \usepackage{easy-todo}
+    #  - file: packages.tex
+    #  - macros.tex
+    keep-tex:               true      # keep .tex file that is produced
+    documentclass:          scrartcl  # article, report, book, scrartcl, scrreprt, scrbook
+    papersize:              letter
+    classoption:            [oneside,11pt] # [twocolumn, landscape]
+    geometry:
+      - margin = 1in
+      #- top  = 30mm
+      #- left = 20mm
+      #- heightrounded
+    fontfamily:             libertinus
+    cite-method:            biblatex
+---
+
+# Getting Started
+
+-   Make sure the Sim1-HPCC.R file is easily accessible on your personal computer.
+-   If you use Projects in R (I recommend), use the R-in-HPCC folder containing the R-in-APCC.Rproj Project and the Sim1-HPCC.R file the "Code" folder.
+-   If you have not yet made an AHPCC account, request one at [hpc.uark.edu/hpc-support/user-account-requests/internal.php](hpc.uark.edu/hpc-support/user-account-requests/internal.php)
+
+# Agenda
+
+-   Intro to parallelization
+-   OpenOnDemand Portal
+    -   Simulation 1 Demonstration
+    -   Simulation 2 Activity
+-   HPC in Terminal
+
+# Intro to Parallelization
+
+## Serial vs. Parallel Processing
+
+-   Suppose we have a series of functions to run, $f_1$, $f_2$, and $f_3$.
+
+-   [Serial processing]{.underline}: Run $f_1$ until it completes, and until $f_1$ is finished, nothing else can run. Once $f_1$ completes, $f_2$ begins, and the process repeats.
+
+-   [Parallel processing]{.underline}: All $f_i$ functions start simultaneously and run to completion.
+
+## The Serial-Parallel Scale {.smaller}
+
+-   A problem can range from "inherently serial" to "perfectly parallel" (or "embarrassingly parallel").
+
+-   [Inherently serial]{.underline}: A problem that cannot be parallelized at all.
+
+    -   Example: $f_2$ depends on the output of $f_1$ before it can begin. In this case, parallel processing wouldn't help and might take longer than on a single core.
+
+-   [Perfectly parallel]{.underline}: There is absolutely no dependency between iterations, and all functions can start simultaneously.
+
+    -   Monte Carlo and statistical simulations usually fall into this category.
+
+## Vocabulary {.smaller}
+
+-   [HPC]{.underline}: High performance computing. Implies a program that is too large, or takes too long, to reasonably run on a desktop computer.[^1]
+
+-   [Core]{.underline}: A general term for either a single processor on your own computer or a single machine in a cluster.
+
+-   [Cluster]{.underline}: A collection of objects capable of hosting cores, either a network or the collection of cores on your personal computer.
+
+-   [Process]{.underline}: A single version of R (or any program). Each core runs a single process, and a process typically runs a single function.
+
+[^1]: [AHPC Webpage on Jargon](https://hpcwiki.uark.edu/doku.php?id=jargon)
+
+## Parallelization Analogy
+
+-   In AHPC, we can run up to 32 cores per session.
+
+-   Imagine having 15,000 jobs. Distributing these jobs among 32 friends will take much less time than doing 15,000 jobs alone.
+
+-   Once one friend (core) finishes the job they're working on, that friend begins the next job in the list.
+
+-   There are diminishing returns for adding cores. Giving each friend (core) instructions takes time, and the friend telling you the results takes time, too.
+
+-   Resource: [More info on parallelization efficiency](https://researchcomputingservices.github.io/parallel-computing/02-speedup-limitations/)
+
+## The `parallel` & `foreach` Packages
+
+-   Load the package in R: `library(parallel)`
+
+-   Check the number of cores you have access to with `detectCores()`.
+
+    ```{r}
+    library(parallel)
+    detectCores()
+    ```
+
+-   Tip: Leave one core free when you're running a simulation.
+
+    ```{r}
+    n_cores <- detectCores() - 1
+    ```
+
+-   The `doParallel` package allows `foreach` "loops", similar to `for` loops.
+
+    ```{r}
+    library(doParallel)
+
+    cl <- makeCluster(n_cores)
+    registerDoParallel()
+
+    foreach(i = 1:20) %dopar% {
+      sqrt(i)
+    }
+
+    stopCluster(cl)
+    ```
+
+## Demonstration: `foreach`
+
+-   The `test()` function does the following:
+
+    -   Creates and registers a new cluster with `n_cores` CPU cores, and stops the cluster after the computation.
+
+    -   Uses `foreach` to perform iteration `n_iter` number of times
+
+    -   Keeps track of the time needed in total, and time needed for each computation
+
+```{r}
+test <- function(n_cores, n_iter){
+  # Record start time
+  time_start <- Sys.time()
+
+  # Create and register cluster
+  cl <- makeCluster(n_cores)
+  registerDoParallel(cl)
+
+  # Record this run's computation start time
+  time_start_processing <- Sys.time()
+
+  # Do the processing
+  results <- foreach(i = 1:n_iter) %dopar% {
+    i^2
+  }
+
+  # Record this run's computation stop time
+  time_finish_processing <- Sys.time()
+
+  # Stop the cluster
+  stopCluster(cl)
+
+  # Keep track of the end time
+  time_end <- Sys.time()
+
+  # Create report 
+  out <- data.frame(
+    Cores = n_cores,
+    Iterations = n_iter,
+    Total.Time = difftime(time_end, time_start, units = "secs"),
+    Compute.Time = difftime(time_finish_processing, time_start_processing, units = "secs"))
+  
+  # Return the report
+  return(out)
+}
+```
+
+-   Now, executing the test:
+
+```{r}
+cores <- c(1, 4, detectCores()-1)
+replications <- c(1000, 10000, 100000)
+
+results <- data.frame()
+
+for(n in 1:length(cores)){
+  for(r in 1:length(replications)){
+    out1 <- test(cores[n], replications[r])
+    results <- rbind(results, out1)
+  }
+}
+
+results
+```
+
+::: footer
+Demonstration adapted from <https://www.appsilon.com/post/r-doparallel>.
+:::
+
+### Demonstration Results
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(patchwork)
+library(reshape2)
+
+res.vis <- results |>
+  mutate("Overhead.Time" = Total.Time - Compute.Time) |>
+  melt(id.vars = c("Cores", "Iterations"), value.name = "Time") |>
+  filter(variable != "Total.Time")
+
+res.vis <- res.vis |>
+  mutate(variable = factor(res.vis$variable, levels = c("Compute.Time", "Overhead.Time")), 
+         Cores = as.factor(res.vis$Cores),
+         Time = as.numeric(res.vis$Time))
+
+results.vis1000 <- res.vis |> 
+  filter(Iterations == 1000) 
+
+runtime1000 <- results.vis1000 |>
+  ggplot(aes(x = Cores, y = Time)) +
+  geom_bar(position = "stack", stat = "identity", aes(fill = variable)) +
+  scale_fill_manual(labels = c("Compute.Time" = "Computation Time", 
+                               "Overhead.Time" = "Overhead Time"),
+                    values = c("cyan3", "coral")) +
+  labs(title = "Run Time with \n 1,000 Iterations",
+       x = "Number of Cores", 
+       y = "Time (Seconds)",
+       fill = "Time Type") 
+
+
+results.vis10000 <- res.vis |> 
+  filter(Iterations == 10000) 
+runtime10000 <- results.vis10000 |>
+  ggplot(aes(x = Cores, y = Time)) +
+  geom_bar(position = "stack", stat = "identity", aes(fill = variable)) +
+  scale_fill_manual(labels = c("Compute.Time" = "Computation Time", 
+                               "Overhead.Time" = "Overhead Time"),
+                    values = c("cyan3", "coral")) +
+  labs(title = "Run Time with \n 10,000 Iterations",
+       x = "Number of Cores", 
+       y = "Time (Seconds)",
+       fill = "Time Type") 
+
+
+
+results.vis100000 <- res.vis |> 
+  filter(Iterations == 100000) 
+runtime100000 <- results.vis100000 |>
+  mutate(variable = factor(results.vis100000$variable, levels = c("Compute.Time", "Overhead.Time")), 
+         Cores = as.factor(results.vis100000$Cores),
+         Time = as.numeric(results.vis100000$Time)) |>
+  ggplot(aes(x = Cores, y = Time)) +
+  geom_bar(position = "stack", stat = "identity", aes(fill = variable)) +
+  scale_fill_manual(labels = c("Compute.Time" = "Computation Time", 
+                               "Overhead.Time" = "Overhead Time"),
+                    values = c("cyan3", "coral")) +
+  labs(title = "Run Time with \n 1,000 Iterations",
+       x = "Number of Cores", 
+       y = "Time (Seconds)",
+       fill = "Time Type") 
+
+runtime1000 + runtime10000 + runtime100000 +
+  plot_layout(guides = "collect",
+              ncol = 3) &
+  theme(legend.position = "bottom")
+```
+
+::: footer
+Demonstration adapted from <https://www.appsilon.com/post/r-doparallel>.
+:::
+
+# Interactive Sessions in the Pinnacle Portal
+
+## Starting an Interactive Session
+
+-   Pinnacle Portal: hpc-portal2.hpc.uark.edu
+
+-   Menu at the top of Pinnacle Portal \> Interactive Apps \> R-Studio
+
+-   Choose number of hours (start small)
+
+-   Choose number of cores (leave blank for all)
+
+-   "Launch"
+
+## Launch R-Studio
+
+-   Once your job is active, the "My Interactive Sessions" page looks like this:
+
+    ![](Images/Interactive%20Session%20Launch.png)
+
+-   Clicking "Launch R-Studio" takes you to the interactive session
+
+## Checking Active Jobs Queue
+
+-   In Pinnacle Portal, Menu \> Jobs \> Active Jobs
+
+-   Active Jobs are sorted alphabetically by queue
+
+## Tips for Interactive Sessions in R
+
+-   Tip 1: Closing R-Studio ends your session.
+
+-   Tip 2: the `read_csv` function causes R-Studio to terminate the session. Use `read.csv` instead.
+
+## Uploading Data {.smaller}
+
+-   Menu \> Files \> Home Directory
+
+-   I put my files in the Desktop for quick access.
+
+    ![](Images/Files%20location.png)
+
+-   Make new folders using the "New Dir" button.
+
+    ![](Images/New%20Dir%20button.png)
+
+-   Upload file(s) using the "Upload" button.
+
+    ![](Images/Upload%20button.png)
+
+-   Tip: To upload multiple files, compress the files/folder on your computer and upload a zipped file (.zip)
+
+## Downloading Files
+
+-   Tip: For multiple files, compress the files/folder in the GUI (or in Terminal).
+
+    ![](Images/Download%20compress.png){width="531"}
+
+-   In the Files explorer, click on the file, then click the "Download" button.
+
+    ![](Images/Download%20button.png)
+
+# Simulation 1 Demonstration: Type I Error
+
+## Simulation 1 Overview {.smaller}
+
+-   In this study, we will demonstrate the Type I Error rates for One-Way ANOVA.
+
+-   Recall, we use One-Way ANOVA to detect group mean differences.
+
+-   For three groups, the null hypothesis is $H_0:\mu_1=\mu_2=\mu_3$.
+
+-   Type I Error is a false positive (rejecting the null hypothesis when the null hypothesis is true).
+
+-   We (the researchers) determine $\alpha$, the probability of committing a Type I error (usually .05, sometimes .01 or .001).
+
+## Simulation 1 Overview
+
+-   In this simulation, we will generate (simulate) 10,000 datasets of three groups with equal means.
+
+-   We will perform an ANOVA test on each dataset, and record whether the result is significant.
+
+-   When $p=.05$, we expect \~500/10,000 significance tests to reject $H_0$, even though $H_0$ is true.
+
+-   When $p=.01$, we expect \~100/10,000 significance tests to reject $H_0$.
+
+-   When $p=.001$, we expect \~1,000/10,000 significance tests to reject $H_0$.
+
+## Simulation 1 in HPCC Cluster: Steps
+
+1.  Upload Sim1-HPCC.R code file from your personal computer to Files in Pinnacle Portal.
+2.  Begin Active Session.
+3.  Run R Script in HPCC (completed in the Interactive Session).
+4.  End Active Session.
+5.  Download results from Files to your personal computer, then analyze!
+
+# Submitting Jobs in Terminal
+
+## Connect to HPCC from the Terminal
+
+Type in the following command in your terminal on Mac (or Powershell on Windows). It will request your university password ("\[username\]\@hpc-portal2.hpc.uark.edu's password:"). After you provide the password, you should connect to the pinnacle login node.
+
+```{bash}
+#| eval: false
+ssh [username]@hpc-portal2.hpc.uark.edu
+```
+
+![](images/clipboard-1050425491.png)
+
+## Create a new folder and Upload the file
+
+-   Use the following command to create a new folder in your AHPCC account root folder.
+
+```{bash}
+#| eval: false
+mkdir R-in-HPCC
+```
+
+Open a new terminal, type in the following command to upload the R file and job file to the folder `R-in-HPCC`
+
+```{bash}
+#| eval: false
+scp Sim1-HPCC.R [username]@hpc-portal2.hpc.uark.edu:/home/[username]/R-in-HPCC
+scp job.sh [username]@hpc-portal2.hpc.uark.edu:/home/[username]/R-in-HPCC
+```
+
+## Submit the job task
+
+```{bash}
+#| eval: false
+pinnacle-l3:[username]:~/R-in-HPCC$ sbatch job.sh
+Submitted batch job 637189
+```
+
+## Check Results
+
+```{bash}
+#| eval: false
+pinnacle-l3:[username]:~/R-in-HPCC$ ls Type1-Results/
+```
+
+# Simulation 2 Exercise: Power
+
+-   Your turn! Use the Sim2-HPCC.R file to run Simulation 2.
+
+# Wrapping up
+
+Any Questions?
+
+Thank you!

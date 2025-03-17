@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nicole Bonge and Prof.&nbsp;Jihong Zhang">
+
+<title>R in AHPC</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="R-in-AHPC_files/libs/clipboard/clipboard.min.js"></script>
+<script src="R-in-AHPC_files/libs/quarto-html/quarto.js"></script>
+<script src="R-in-AHPC_files/libs/quarto-html/popper.min.js"></script>
+<script src="R-in-AHPC_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="R-in-AHPC_files/libs/quarto-html/anchor.min.js"></script>
+<link href="R-in-AHPC_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="R-in-AHPC_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="R-in-AHPC_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="R-in-AHPC_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="R-in-AHPC_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="R-in-AHPC_files/libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+
+<script src="R-in-AHPC_files/libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-full">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
+<main class="content column-page" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">R in AHPC</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta column-page">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nicole Bonge and Prof.&nbsp;Jihong Zhang </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+<nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#getting-started" id="toc-getting-started"><span class="header-section-number">1</span> Getting Started</a></li>
+  <li><a href="#agenda" id="toc-agenda"><span class="header-section-number">2</span> Agenda</a></li>
+  <li><a href="#intro-to-parallelization" id="toc-intro-to-parallelization"><span class="header-section-number">3</span> Intro to Parallelization</a>
+  <ul>
+  <li><a href="#serial-vs.-parallel-processing" id="toc-serial-vs.-parallel-processing"><span class="header-section-number">3.1</span> Serial vs.&nbsp;Parallel Processing</a></li>
+  <li><a href="#the-serial-parallel-scale" id="toc-the-serial-parallel-scale"><span class="header-section-number">3.2</span> The Serial-Parallel Scale</a></li>
+  <li><a href="#vocabulary" id="toc-vocabulary"><span class="header-section-number">3.3</span> Vocabulary</a></li>
+  <li><a href="#parallelization-analogy" id="toc-parallelization-analogy"><span class="header-section-number">3.4</span> Parallelization Analogy</a></li>
+  <li><a href="#the-parallel-foreach-packages" id="toc-the-parallel-foreach-packages"><span class="header-section-number">3.5</span> The <code>parallel</code> &amp; <code>foreach</code> Packages</a></li>
+  <li><a href="#demonstration-foreach" id="toc-demonstration-foreach"><span class="header-section-number">3.6</span> Demonstration: <code>foreach</code></a>
+  <ul>
+  <li><a href="#demonstration-results" id="toc-demonstration-results"><span class="header-section-number">3.6.1</span> Demonstration Results</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#interactive-sessions-in-the-pinnacle-portal" id="toc-interactive-sessions-in-the-pinnacle-portal"><span class="header-section-number">4</span> Interactive Sessions in the Pinnacle Portal</a>
+  <ul>
+  <li><a href="#starting-an-interactive-session" id="toc-starting-an-interactive-session"><span class="header-section-number">4.1</span> Starting an Interactive Session</a></li>
+  <li><a href="#launch-r-studio" id="toc-launch-r-studio"><span class="header-section-number">4.2</span> Launch R-Studio</a></li>
+  <li><a href="#checking-active-jobs-queue" id="toc-checking-active-jobs-queue"><span class="header-section-number">4.3</span> Checking Active Jobs Queue</a></li>
+  <li><a href="#tips-for-interactive-sessions-in-r" id="toc-tips-for-interactive-sessions-in-r"><span class="header-section-number">4.4</span> Tips for Interactive Sessions in R</a></li>
+  <li><a href="#uploading-data" id="toc-uploading-data"><span class="header-section-number">4.5</span> Uploading Data</a></li>
+  <li><a href="#downloading-files" id="toc-downloading-files"><span class="header-section-number">4.6</span> Downloading Files</a></li>
+  </ul></li>
+  <li><a href="#simulation-1-demonstration-type-i-error" id="toc-simulation-1-demonstration-type-i-error"><span class="header-section-number">5</span> Simulation 1 Demonstration: Type I Error</a>
+  <ul>
+  <li><a href="#simulation-1-overview" id="toc-simulation-1-overview"><span class="header-section-number">5.1</span> Simulation 1 Overview</a></li>
+  <li><a href="#simulation-1-overview-1" id="toc-simulation-1-overview-1"><span class="header-section-number">5.2</span> Simulation 1 Overview</a></li>
+  <li><a href="#simulation-1-in-hpcc-cluster-steps" id="toc-simulation-1-in-hpcc-cluster-steps"><span class="header-section-number">5.3</span> Simulation 1 in HPCC Cluster: Steps</a></li>
+  </ul></li>
+  <li><a href="#submitting-jobs-in-terminal" id="toc-submitting-jobs-in-terminal"><span class="header-section-number">6</span> Submitting Jobs in Terminal</a>
+  <ul>
+  <li><a href="#connect-to-hpcc-from-the-terminal" id="toc-connect-to-hpcc-from-the-terminal"><span class="header-section-number">6.1</span> Connect to HPCC from the Terminal</a></li>
+  <li><a href="#create-a-new-folder-and-upload-the-file" id="toc-create-a-new-folder-and-upload-the-file"><span class="header-section-number">6.2</span> Create a new folder and Upload the file</a></li>
+  <li><a href="#submit-the-job-task" id="toc-submit-the-job-task"><span class="header-section-number">6.3</span> Submit the job task</a></li>
+  <li><a href="#check-results" id="toc-check-results"><span class="header-section-number">6.4</span> Check Results</a></li>
+  </ul></li>
+  <li><a href="#simulation-2-exercise-power" id="toc-simulation-2-exercise-power"><span class="header-section-number">7</span> Simulation 2 Exercise: Power</a></li>
+  <li><a href="#wrapping-up" id="toc-wrapping-up"><span class="header-section-number">8</span> Wrapping up</a></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="R-in-AHPC.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
+<section id="getting-started" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Getting Started</h1>
+<ul>
+<li>Make sure the Sim1-HPCC.R file is easily accessible on your personal computer.</li>
+<li>If you use Projects in R (I recommend), use the R-in-HPCC folder containing the R-in-HPCC.Rproj Project and the Sim1-HPCC.R file the “Code” folder.</li>
+<li>If you have not yet made an AHPCC account, request one at <a href="hpc.uark.edu/hpc-support/user-account-requests/internal.php">hpc.uark.edu/hpc-support/user-account-requests/internal.php</a></li>
+</ul>
+</section>
+<section id="agenda" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Agenda</h1>
+<ul>
+<li>Intro to parallelization</li>
+<li>OpenOnDemand Portal
+<ul>
+<li>Simulation 1 Demonstration</li>
+<li>Simulation 2 Activity</li>
+</ul></li>
+<li>HPC in Terminal</li>
+</ul>
+</section>
+<section id="intro-to-parallelization" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Intro to Parallelization</h1>
+<section id="serial-vs.-parallel-processing" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="serial-vs.-parallel-processing"><span class="header-section-number">3.1</span> Serial vs.&nbsp;Parallel Processing</h2>
+<ul>
+<li><p>Suppose we have a series of functions to run, <span class="math inline">\(f_1\)</span>, <span class="math inline">\(f_2\)</span>, and <span class="math inline">\(f_3\)</span>.</p></li>
+<li><p><u>Serial processing</u>: Run <span class="math inline">\(f_1\)</span> until it completes, and until <span class="math inline">\(f_1\)</span> is finished, nothing else can run. Once <span class="math inline">\(f_1\)</span> completes, <span class="math inline">\(f_2\)</span> begins, and the process repeats.</p></li>
+<li><p><u>Parallel processing</u>: All <span class="math inline">\(f_i\)</span> functions start simultaneously and run to completion.</p></li>
+</ul>
+</section>
+<section id="the-serial-parallel-scale" class="level2 smaller" data-number="3.2">
+<h2 class="smaller anchored" data-number="3.2" data-anchor-id="the-serial-parallel-scale"><span class="header-section-number">3.2</span> The Serial-Parallel Scale</h2>
+<ul>
+<li><p>A problem can range from “inherently serial” to “perfectly parallel” (or “embarrassingly parallel”).</p></li>
+<li><p><u>Inherently serial</u>: A problem that cannot be parallelized at all.</p>
+<ul>
+<li>Example: <span class="math inline">\(f_2\)</span> depends on the output of <span class="math inline">\(f_1\)</span> before it can begin. In this case, parallel processing wouldn’t help and might take longer than on a single core.</li>
+</ul></li>
+<li><p><u>Perfectly parallel</u>: There is absolutely no dependency between iterations, and all functions can start simultaneously.</p>
+<ul>
+<li>Monte Carlo and statistical simulations usually fall into this category.</li>
+</ul></li>
+</ul>
+</section>
+<section id="vocabulary" class="level2 smaller" data-number="3.3">
+<h2 class="smaller anchored" data-number="3.3" data-anchor-id="vocabulary"><span class="header-section-number">3.3</span> Vocabulary</h2>
+<ul>
+<li><p><u>HPC</u>: High performance computing. Implies a program that is too large, or takes too long, to reasonably run on a desktop computer.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p></li>
+<li><p><u>Core</u>: A general term for either a single processor on your own computer or a single machine in a cluster.</p></li>
+<li><p><u>Cluster</u>: A collection of objects capable of hosting cores, either a network or the collection of cores on your personal computer.</p></li>
+<li><p><u>Process</u>: A single version of R (or any program). Each core runs a single process, and a process typically runs a single function.</p></li>
+</ul>
+</section>
+<section id="parallelization-analogy" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="parallelization-analogy"><span class="header-section-number">3.4</span> Parallelization Analogy</h2>
+<ul>
+<li><p>In AHPC, we can run up to 32 cores per session.</p></li>
+<li><p>Imagine having 15,000 jobs. Distributing these jobs among 32 friends will take much less time than doing 15,000 jobs alone.</p></li>
+<li><p>Once one friend (core) finishes the job they’re working on, that friend begins the next job in the list.</p></li>
+<li><p>There are diminishing returns for adding cores. Giving each friend (core) instructions takes time, and the friend telling you the results takes time, too.</p></li>
+<li><p>Resource: <a href="https://researchcomputingservices.github.io/parallel-computing/02-speedup-limitations/">More info on parallelization efficiency</a></p></li>
+</ul>
+</section>
+<section id="the-parallel-foreach-packages" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="the-parallel-foreach-packages"><span class="header-section-number">3.5</span> The <code>parallel</code> &amp; <code>foreach</code> Packages</h2>
+<ul>
+<li><p>Load the package in R: <code>library(parallel)</code></p></li>
+<li><p>Check the number of cores you have access to with <code>detectCores()</code>.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">detectCores</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 12</code></pre>
+</div>
+</div></li>
+<li><p>Tip: Leave one core free when you’re running a simulation.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>n_cores <span class="ot">&lt;-</span> <span class="fu">detectCores</span>() <span class="sc">-</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></li>
+<li><p>The <code>doParallel</code> package allows <code>foreach</code> “loops”, similar to <code>for</code> loops.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(doParallel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: foreach</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: iterators</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(n_cores)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">registerDoParallel</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">i =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">20</span>) <span class="sc">%dopar%</span> {</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sqrt</span>(i)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 1
+
+[[2]]
+[1] 1.414214
+
+[[3]]
+[1] 1.732051
+
+[[4]]
+[1] 2
+
+[[5]]
+[1] 2.236068
+
+[[6]]
+[1] 2.44949
+
+[[7]]
+[1] 2.645751
+
+[[8]]
+[1] 2.828427
+
+[[9]]
+[1] 3
+
+[[10]]
+[1] 3.162278
+
+[[11]]
+[1] 3.316625
+
+[[12]]
+[1] 3.464102
+
+[[13]]
+[1] 3.605551
+
+[[14]]
+[1] 3.741657
+
+[[15]]
+[1] 3.872983
+
+[[16]]
+[1] 4
+
+[[17]]
+[1] 4.123106
+
+[[18]]
+[1] 4.242641
+
+[[19]]
+[1] 4.358899
+
+[[20]]
+[1] 4.472136</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stopCluster</span>(cl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div></li>
+</ul>
+</section>
+<section id="demonstration-foreach" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="demonstration-foreach"><span class="header-section-number">3.6</span> Demonstration: <code>foreach</code></h2>
+<ul>
+<li><p>The <code>test()</code> function does the following:</p>
+<ul>
+<li><p>Creates and registers a new cluster with <code>n_cores</code> CPU cores, and stops the cluster after the computation.</p></li>
+<li><p>Uses <code>foreach</code> to perform iteration <code>n_iter</code> number of times</p></li>
+<li><p>Keeps track of the time needed in total, and time needed for each computation</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>test <span class="ot">&lt;-</span> <span class="cf">function</span>(n_cores, n_iter){</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Record start time</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  time_start <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create and register cluster</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  cl <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(n_cores)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">registerDoParallel</span>(cl)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Record this run's computation start time</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  time_start_processing <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Do the processing</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="dv">1</span><span class="sc">:</span>n_iter) <span class="sc">%dopar%</span> {</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    i<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Record this run's computation stop time</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  time_finish_processing <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Stop the cluster</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stopCluster</span>(cl)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep track of the end time</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  time_end <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create report </span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">Cores =</span> n_cores,</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">Iterations =</span> n_iter,</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Total.Time =</span> <span class="fu">difftime</span>(time_end, time_start, <span class="at">units =</span> <span class="st">"secs"</span>),</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">Compute.Time =</span> <span class="fu">difftime</span>(time_finish_processing, time_start_processing, <span class="at">units =</span> <span class="st">"secs"</span>))</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return the report</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<ul>
+<li>Now, executing the test:</li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cores <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>, <span class="fu">detectCores</span>()<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>replications <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">10000</span>, <span class="dv">100000</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(n <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(cores)){</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(r <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(replications)){</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    out1 <span class="ot">&lt;-</span> <span class="fu">test</span>(cores[n], replications[r])</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    results <span class="ot">&lt;-</span> <span class="fu">rbind</span>(results, out1)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>results</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["Cores"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["Iterations"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Total.Time"],"name":[3],"type":["drtn"],"align":["right"]},{"label":["Compute.Time"],"name":[4],"type":["drtn"],"align":["right"]}],"data":[{"1":"1","2":"1e+03","3":"0.4317999 secs","4":"0.2751849 secs"},{"1":"1","2":"1e+04","3":"2.4750981 secs","4":"2.3248808 secs"},{"1":"1","2":"1e+05","3":"24.3456538 secs","4":"24.2093410 secs"},{"1":"4","2":"1e+03","3":"0.4172630 secs","4":"0.2133009 secs"},{"1":"4","2":"1e+04","3":"1.9970322 secs","4":"1.7959609 secs"},{"1":"4","2":"1e+05","3":"18.0112500 secs","4":"17.8090990 secs"},{"1":"11","2":"1e+03","3":"0.6222820 secs","4":"0.2577591 secs"},{"1":"11","2":"1e+04","3":"2.1400309 secs","4":"1.8084750 secs"},{"1":"11","2":"1e+05","3":"19.6405230 secs","4":"19.2974210 secs"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div class="footer">
+<p>Demonstration adapted from <a href="https://www.appsilon.com/post/r-doparallel" class="uri">https://www.appsilon.com/post/r-doparallel</a>.</p>
+</div>
+<section id="demonstration-results" class="level3" data-number="3.6.1">
+<h3 data-number="3.6.1" class="anchored" data-anchor-id="demonstration-results"><span class="header-section-number">3.6.1</span> Demonstration Results</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ lubridate 1.9.3     ✔ tibble    3.2.1
+✔ purrr     1.0.2     ✔ tidyr     1.3.1
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ purrr::accumulate() masks foreach::accumulate()
+✖ dplyr::filter()     masks stats::filter()
+✖ dplyr::lag()        masks stats::lag()
+✖ purrr::when()       masks foreach::when()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(reshape2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'reshape2'
+
+The following object is masked from 'package:tidyr':
+
+    smiths</code></pre>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>res.vis <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">"Overhead.Time"</span> <span class="ot">=</span> Total.Time <span class="sc">-</span> Compute.Time) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">melt</span>(<span class="at">id.vars =</span> <span class="fu">c</span>(<span class="st">"Cores"</span>, <span class="st">"Iterations"</span>), <span class="at">value.name =</span> <span class="st">"Time"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(variable <span class="sc">!=</span> <span class="st">"Total.Time"</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>res.vis <span class="ot">&lt;-</span> res.vis <span class="sc">|&gt;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">variable =</span> <span class="fu">factor</span>(res.vis<span class="sc">$</span>variable, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Compute.Time"</span>, <span class="st">"Overhead.Time"</span>)), </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">Cores =</span> <span class="fu">as.factor</span>(res.vis<span class="sc">$</span>Cores),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">Time =</span> <span class="fu">as.numeric</span>(res.vis<span class="sc">$</span>Time))</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>results.vis1000 <span class="ot">&lt;-</span> res.vis <span class="sc">|&gt;</span> </span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Iterations <span class="sc">==</span> <span class="dv">1000</span>) </span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>runtime1000 <span class="ot">&lt;-</span> results.vis1000 <span class="sc">|&gt;</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Cores, <span class="at">y =</span> Time)) <span class="sc">+</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"stack"</span>, <span class="at">stat =</span> <span class="st">"identity"</span>, <span class="fu">aes</span>(<span class="at">fill =</span> variable)) <span class="sc">+</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Compute.Time"</span> <span class="ot">=</span> <span class="st">"Computation Time"</span>, </span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Overhead.Time"</span> <span class="ot">=</span> <span class="st">"Overhead Time"</span>),</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>                    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"cyan3"</span>, <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Run Time with </span><span class="sc">\n</span><span class="st"> 1,000 Iterations"</span>,</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Cores"</span>, </span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Time (Seconds)"</span>,</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Time Type"</span>) </span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>results.vis10000 <span class="ot">&lt;-</span> res.vis <span class="sc">|&gt;</span> </span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Iterations <span class="sc">==</span> <span class="dv">10000</span>) </span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>runtime10000 <span class="ot">&lt;-</span> results.vis10000 <span class="sc">|&gt;</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Cores, <span class="at">y =</span> Time)) <span class="sc">+</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"stack"</span>, <span class="at">stat =</span> <span class="st">"identity"</span>, <span class="fu">aes</span>(<span class="at">fill =</span> variable)) <span class="sc">+</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Compute.Time"</span> <span class="ot">=</span> <span class="st">"Computation Time"</span>, </span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Overhead.Time"</span> <span class="ot">=</span> <span class="st">"Overhead Time"</span>),</span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>                    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"cyan3"</span>, <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Run Time with </span><span class="sc">\n</span><span class="st"> 10,000 Iterations"</span>,</span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Cores"</span>, </span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Time (Seconds)"</span>,</span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Time Type"</span>) </span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>results.vis100000 <span class="ot">&lt;-</span> res.vis <span class="sc">|&gt;</span> </span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Iterations <span class="sc">==</span> <span class="dv">100000</span>) </span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>runtime100000 <span class="ot">&lt;-</span> results.vis100000 <span class="sc">|&gt;</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">variable =</span> <span class="fu">factor</span>(results.vis100000<span class="sc">$</span>variable, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Compute.Time"</span>, <span class="st">"Overhead.Time"</span>)), </span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>         <span class="at">Cores =</span> <span class="fu">as.factor</span>(results.vis100000<span class="sc">$</span>Cores),</span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>         <span class="at">Time =</span> <span class="fu">as.numeric</span>(results.vis100000<span class="sc">$</span>Time)) <span class="sc">|&gt;</span></span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Cores, <span class="at">y =</span> Time)) <span class="sc">+</span></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">position =</span> <span class="st">"stack"</span>, <span class="at">stat =</span> <span class="st">"identity"</span>, <span class="fu">aes</span>(<span class="at">fill =</span> variable)) <span class="sc">+</span></span>
+<span id="cb16-49"><a href="#cb16-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Compute.Time"</span> <span class="ot">=</span> <span class="st">"Computation Time"</span>, </span>
+<span id="cb16-50"><a href="#cb16-50" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Overhead.Time"</span> <span class="ot">=</span> <span class="st">"Overhead Time"</span>),</span>
+<span id="cb16-51"><a href="#cb16-51" aria-hidden="true" tabindex="-1"></a>                    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"cyan3"</span>, <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb16-52"><a href="#cb16-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Run Time with </span><span class="sc">\n</span><span class="st"> 1,000 Iterations"</span>,</span>
+<span id="cb16-53"><a href="#cb16-53" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of Cores"</span>, </span>
+<span id="cb16-54"><a href="#cb16-54" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Time (Seconds)"</span>,</span>
+<span id="cb16-55"><a href="#cb16-55" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Time Type"</span>) </span>
+<span id="cb16-56"><a href="#cb16-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-57"><a href="#cb16-57" aria-hidden="true" tabindex="-1"></a>runtime1000 <span class="sc">+</span> runtime10000 <span class="sc">+</span> runtime100000 <span class="sc">+</span></span>
+<span id="cb16-58"><a href="#cb16-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>,</span>
+<span id="cb16-59"><a href="#cb16-59" aria-hidden="true" tabindex="-1"></a>              <span class="at">ncol =</span> <span class="dv">3</span>) <span class="sc">&amp;</span></span>
+<span id="cb16-60"><a href="#cb16-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="R-in-AHPC_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="footer">
+<p>Demonstration adapted from <a href="https://www.appsilon.com/post/r-doparallel" class="uri">https://www.appsilon.com/post/r-doparallel</a>.</p>
+</div>
+</section>
+</section>
+</section>
+<section id="interactive-sessions-in-the-pinnacle-portal" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Interactive Sessions in the Pinnacle Portal</h1>
+<section id="starting-an-interactive-session" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="starting-an-interactive-session"><span class="header-section-number">4.1</span> Starting an Interactive Session</h2>
+<ul>
+<li><p>Pinnacle Portal: hpc-portal2.hpc.uark.edu</p></li>
+<li><p>Menu at the top of Pinnacle Portal &gt; Interactive Apps &gt; R-Studio</p></li>
+<li><p>Choose number of hours (start small)</p></li>
+<li><p>Choose number of cores (leave blank for all)</p></li>
+<li><p>“Launch”</p></li>
+</ul>
+</section>
+<section id="launch-r-studio" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="launch-r-studio"><span class="header-section-number">4.2</span> Launch R-Studio</h2>
+<ul>
+<li><p>Once your job is active, the “My Interactive Sessions” page looks like this:</p>
+<p><img src="Images/Interactive%20Session%20Launch.png" class="img-fluid"></p></li>
+<li><p>Clicking “Launch R-Studio” takes you to the interactive session</p></li>
+</ul>
+</section>
+<section id="checking-active-jobs-queue" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="checking-active-jobs-queue"><span class="header-section-number">4.3</span> Checking Active Jobs Queue</h2>
+<ul>
+<li><p>In Pinnacle Portal, Menu &gt; Jobs &gt; Active Jobs</p></li>
+<li><p>Active Jobs are sorted alphabetically by queue</p></li>
+</ul>
+</section>
+<section id="tips-for-interactive-sessions-in-r" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="tips-for-interactive-sessions-in-r"><span class="header-section-number">4.4</span> Tips for Interactive Sessions in R</h2>
+<ul>
+<li><p>Tip 1: Closing R-Studio ends your session.</p></li>
+<li><p>Tip 2: the <code>read_csv</code> function causes R-Studio to terminate the session. Use <code>read.csv</code> instead.</p></li>
+</ul>
+</section>
+<section id="uploading-data" class="level2 smaller" data-number="4.5">
+<h2 class="smaller anchored" data-number="4.5" data-anchor-id="uploading-data"><span class="header-section-number">4.5</span> Uploading Data</h2>
+<ul>
+<li><p>Menu &gt; Files &gt; Home Directory</p></li>
+<li><p>I put my files in the Desktop for quick access.</p>
+<p><img src="Images/Files%20location.png" class="img-fluid"></p></li>
+<li><p>Make new folders using the “New Dir” button.</p>
+<p><img src="Images/New%20Dir%20button.png" class="img-fluid"></p></li>
+<li><p>Upload file(s) using the “Upload” button.</p>
+<p><img src="Images/Upload%20button.png" class="img-fluid"></p></li>
+<li><p>Tip: To upload multiple files, compress the files/folder on your computer and upload a zipped file (.zip)</p></li>
+</ul>
+</section>
+<section id="downloading-files" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="downloading-files"><span class="header-section-number">4.6</span> Downloading Files</h2>
+<ul>
+<li><p>Tip: For multiple files, compress the files/folder in the GUI (or in Terminal).</p>
+<p><img src="Images/Download%20compress.png" class="img-fluid" width="531"></p></li>
+<li><p>In the Files explorer, click on the file, then click the “Download” button.</p>
+<p><img src="Images/Download%20button.png" class="img-fluid"></p></li>
+</ul>
+</section>
+</section>
+<section id="simulation-1-demonstration-type-i-error" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Simulation 1 Demonstration: Type I Error</h1>
+<section id="simulation-1-overview" class="level2 smaller" data-number="5.1">
+<h2 class="smaller anchored" data-number="5.1" data-anchor-id="simulation-1-overview"><span class="header-section-number">5.1</span> Simulation 1 Overview</h2>
+<ul>
+<li><p>In this study, we will demonstrate the Type I Error rates for One-Way ANOVA.</p></li>
+<li><p>Recall, we use One-Way ANOVA to detect group mean differences.</p></li>
+<li><p>For three groups, the null hypothesis is <span class="math inline">\(H_0:\mu_1=\mu_2=\mu_3\)</span>.</p></li>
+<li><p>Type I Error is a false positive (rejecting the null hypothesis when the null hypothesis is true).</p></li>
+<li><p>We (the researchers) determine <span class="math inline">\(\alpha\)</span>, the probability of committing a Type I error (usually .05, sometimes .01 or .001).</p></li>
+</ul>
+</section>
+<section id="simulation-1-overview-1" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="simulation-1-overview-1"><span class="header-section-number">5.2</span> Simulation 1 Overview</h2>
+<ul>
+<li><p>In this simulation, we will generate (simulate) 10,000 datasets of three groups with equal means.</p></li>
+<li><p>We will perform an ANOVA test on each dataset, and record whether the result is significant.</p></li>
+<li><p>When <span class="math inline">\(p=.05\)</span>, we expect ~500/10,000 significance tests to reject <span class="math inline">\(H_0\)</span>, even though <span class="math inline">\(H_0\)</span> is true.</p></li>
+<li><p>When <span class="math inline">\(p=.01\)</span>, we expect ~100/10,000 significance tests to reject <span class="math inline">\(H_0\)</span>.</p></li>
+<li><p>When <span class="math inline">\(p=.001\)</span>, we expect ~1,000/10,000 significance tests to reject <span class="math inline">\(H_0\)</span>.</p></li>
+</ul>
+</section>
+<section id="simulation-1-in-hpcc-cluster-steps" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="simulation-1-in-hpcc-cluster-steps"><span class="header-section-number">5.3</span> Simulation 1 in HPCC Cluster: Steps</h2>
+<ol type="1">
+<li>Upload Sim1-HPCC.R code file from your personal computer to Files in Pinnacle Portal.</li>
+<li>Begin Active Session.</li>
+<li>Run R Script in HPCC (completed in the Interactive Session).</li>
+<li>End Active Session.</li>
+<li>Download results from Files to your personal computer, then analyze!</li>
+</ol>
+</section>
+</section>
+<section id="submitting-jobs-in-terminal" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Submitting Jobs in Terminal</h1>
+<section id="connect-to-hpcc-from-the-terminal" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="connect-to-hpcc-from-the-terminal"><span class="header-section-number">6.1</span> Connect to HPCC from the Terminal</h2>
+<p>Type in the following command in your terminal on Mac (or Powershell on Windows). It will request your university password (“[username]@hpc-portal2.hpc.uark.edu’s password:”). After you provide the password, you should connect to the pinnacle login node.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="pp">[</span><span class="ss">username</span><span class="pp">]</span>@hpc-portal2.hpc.uark.edu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><img src="images/clipboard-1050425491.png" class="img-fluid"></p>
+</section>
+<section id="create-a-new-folder-and-upload-the-file" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="create-a-new-folder-and-upload-the-file"><span class="header-section-number">6.2</span> Create a new folder and Upload the file</h2>
+<ul>
+<li>Use the following command to create a new folder in your AHPCC account root folder.</li>
+</ul>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> R-in-HPCC</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Open a new terminal, type in the following command to upload the R file and job file to the folder <code>R-in-HPCC</code></p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> Sim1-HPCC.R <span class="pp">[</span><span class="ss">username</span><span class="pp">]</span>@hpc-portal2.hpc.uark.edu:/home/<span class="pp">[</span><span class="ss">username</span><span class="pp">]</span>/R-in-HPCC</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> job.sh <span class="pp">[</span><span class="ss">username</span><span class="pp">]</span>@hpc-portal2.hpc.uark.edu:/home/<span class="pp">[</span><span class="ss">username</span><span class="pp">]</span>/R-in-HPCC</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="submit-the-job-task" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="submit-the-job-task"><span class="header-section-number">6.3</span> Submit the job task</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pinnacle-l3:[username]:~/R-in-HPCC$</span> sbatch job.sh</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Submitted</span> batch job 637189</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="check-results" class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="check-results"><span class="header-section-number">6.4</span> Check Results</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pinnacle-l3:[username]:~/R-in-HPCC$</span> ls Type1-Results/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+<section id="simulation-2-exercise-power" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Simulation 2 Exercise: Power</h1>
+<ul>
+<li>Your turn! Use the Sim2-HPCC.R file to run Simulation 2.</li>
+</ul>
+</section>
+<section id="wrapping-up" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Wrapping up</h1>
+<p>Any Questions?</p>
+<p>Thank you!</p>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><a href="https://hpcwiki.uark.edu/doku.php?id=jargon">AHPC Webpage on Jargon</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("^(?:http:|https:)\/\/statacumen\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
